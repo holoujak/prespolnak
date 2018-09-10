@@ -1,0 +1,4 @@
+#ifndef TABLEPRINTER_H
+#define TABLEPRINTER_H
+
+#endif // TABLEPRINTER_H
