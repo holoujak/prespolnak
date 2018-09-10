@@ -42,9 +42,7 @@ private slots:
 
     void on_pb_startChildren_clicked();
 
-    void on_actionPodle_trati_triggered();
-
-    void on_actionPodle_kategorie_triggered();
+    void on_actionBy_track_triggered();
 
 private:
     Ui::MainWindow *ui;
