@@ -4,9 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 
 TARGET = prespolnak
 TEMPLATE = app
@@ -25,10 +26,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        racer.cpp \
+        racermodel.cpp \
+    racersloader.cpp \
+    tableprinter.cpp \
+    resultsdialog.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+        racer.h \
+        racermodel.h \
+    racersloader.h \
+    tableprinter.h \
+    resultsdialog.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    resultsdialog.ui
