@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QAbstractProxyModel>
+#include <QAction>
 #include <QDebug>
 #include <QTime>
 #include <QTimer>
@@ -132,7 +133,7 @@ void MainWindow::printModel(QAbstractProxyModel *pModel, QList<int> excludedColu
         QVector<QString> headers;
         for (int i = 0; i < pModel->columnCount(QModelIndex()); i++) {
             if (i == 0) {
-                stretch.append(2);
+                stretch.append(4);
             } else {
                 stretch.append(5);
             }
@@ -197,8 +198,13 @@ void MainWindow::on_pb_readFile_clicked()
     if (!fileName.isEmpty()) {
         RacersLoader loader;
         QList<Racer> racers = loader.loadRacers(fileName);
+        QSet<QString> categories;
+        QSet<QString> tracks;
 
         for (Racer racer : racers) {
+            categories << racer.category();
+            tracks << racer.track();
+
             if (!m_lastCategoryRank.contains(racer.category())) {
                 m_lastCategoryRank.insert(racer.category(), 1);
             }
@@ -207,6 +213,17 @@ void MainWindow::on_pb_readFile_clicked()
             }
         }
         m_startList->addRacers(racers);
+
+        for (auto category : categories) {
+            QAction *categoryAction = ui->menuBy_category->addAction(category);
+            connect(categoryAction, &QAction::triggered, [=]() { on_category_export_triggered(category); });
+        }
+
+        for (auto track : tracks) {
+            QAction *trackAction = ui->menuBy_track->addAction(track);
+            connect(trackAction, &QAction::triggered, [=]() { on_track_export_triggered(track); });
+        }
+
     }
 }
 
@@ -243,28 +260,28 @@ void MainWindow::on_pb_startChildren_clicked()
     ui->te_startTimeChildren->setTime(QTime().currentTime());
 }
 
-void MainWindow::on_action10_km_triggered()
+void MainWindow::on_category_export_triggered(const QString category)
 {
     auto columns = m_resultList->columns();
     QList<int> excludedColumns;
-    excludedColumns.append(columns["Ztrata na viteze"]);
-    excludedColumns.append(columns["Poradi v kategorii"]);
-    m_exportResultList->setFilterKeyColumn(columns["Trat"]);
-    m_exportResultList->setFilterFixedString("10 Km");
-    m_exportResultList->sort(columns["Celkove poradi"],
+    //excludedColumns.append(columns["Ztrata na viteze"]);
+    excludedColumns.append(columns["Celkove poradi"]);
+    m_exportResultList->setFilterKeyColumn(columns["Kategorie"]);
+    m_exportResultList->setFilterFixedString(category);
+    m_exportResultList->sort(columns["Poradi v kategorii"],
                              Qt::SortOrder::AscendingOrder);
 
     printModel(m_exportResultList, excludedColumns);
 }
 
-void MainWindow::on_action4_km_triggered()
+void MainWindow::on_track_export_triggered(const QString track)
 {
     auto columns = m_resultList->columns();
     QList<int> excludedColumns;
     excludedColumns.append(columns["Ztrata na viteze"]);
     excludedColumns.append(columns["Poradi v kategorii"]);
     m_exportResultList->setFilterKeyColumn(columns["Trat"]);
-    m_exportResultList->setFilterFixedString("4 Km");
+    m_exportResultList->setFilterFixedString(track);
     m_exportResultList->sort(columns["Celkove poradi"],
                              Qt::SortOrder::AscendingOrder);
 

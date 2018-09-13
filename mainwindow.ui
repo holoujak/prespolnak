@@ -335,15 +335,20 @@
     <property name="title">
      <string>Export...</string>
     </property>
-    <widget class="QMenu" name="menuPodle_trati">
+    <widget class="QMenu" name="menuBy_track">
      <property name="title">
       <string>Podle trati</string>
      </property>
-     <addaction name="action10_km"/>
-     <addaction name="action4_km"/>
+     <addaction name="separator"/>
     </widget>
-    <addaction name="menuPodle_trati"/>
-    <addaction name="actionPodle_kategorie"/>
+    <widget class="QMenu" name="menuBy_category">
+     <property name="title">
+      <string>Podle kategorie</string>
+     </property>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="menuBy_track"/>
+    <addaction name="menuBy_category"/>
    </widget>
    <addaction name="menuExport"/>
   </widget>
@@ -356,21 +361,6 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionPodle_kategorie">
-   <property name="text">
-    <string>Podle kategorie</string>
-   </property>
-  </action>
-  <action name="action10_km">
-   <property name="text">
-    <string>10 km</string>
-   </property>
-  </action>
-  <action name="action4_km">
-   <property name="text">
-    <string>4 km</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -20,11 +20,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private:
     void printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns = QList<int>());
+    void on_category_export_triggered(const QString category);
+    void on_track_export_triggered(const QString track);
 
 private slots:
     void on_pb_start_clicked();
@@ -42,10 +44,6 @@ private slots:
     void on_pb_start4_clicked();
 
     void on_pb_startChildren_clicked();
-
-    void on_action10_km_triggered();
-
-    void on_action4_km_triggered();
 
 private:
     Ui::MainWindow *ui;
