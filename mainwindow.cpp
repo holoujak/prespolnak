@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QAbstractProxyModel>
 #include <QDebug>
 #include <QTime>
 #include <QTimer>
@@ -22,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     m_startList = new RacerModel(DEFAULT_RACERS_COLUMNS, this);
+
     QMap<QString, int> resultColums = DEFAULT_RACERS_COLUMNS;
     resultColums.insert("Cas", 7);
     resultColums.insert("Ztrata na viteze", 8);
@@ -31,9 +33,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_filterStartList = new QSortFilterProxyModel(this);
     m_filterResultList = new QSortFilterProxyModel(this);
+    m_exportResultList = new QSortFilterProxyModel(this);
 
     m_filterStartList->setSourceModel(m_startList);
     m_filterResultList->setSourceModel(m_resultList);
+    m_exportResultList->setSourceModel(m_resultList);
 
     ui->lbl_time->setText(QTime().currentTime().toString("HH:mm:ss"));
 
@@ -101,8 +105,10 @@ MainWindow::~MainWindow()
     if (m_resultList) {
         delete m_resultList;
         delete m_filterResultList;
+        delete m_exportResultList;
         m_resultList = 0;
         m_filterResultList = 0;
+        m_exportResultList = nullptr;
     }
 
     if (m_resultsDialog) {
@@ -111,7 +117,7 @@ MainWindow::~MainWindow()
     }
 }
 
-void MainWindow::printModel(RacerModel *pModel)
+void MainWindow::printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns)
 {
     QPrinter printer;
     // printer setup
@@ -133,7 +139,7 @@ void MainWindow::printModel(RacerModel *pModel)
             headers.append(pModel->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString());
         }
         QVector<int> columnStretch = stretch;
-        tablePrinter.printTable(pModel, columnStretch, headers);
+        tablePrinter.printTable(pModel, columnStretch, headers, excludedColumns);
         painter.end();
     }
 }
@@ -219,12 +225,12 @@ void MainWindow::on_pb_loadResults_clicked()
 
 void MainWindow::on_pb_printStartList_clicked()
 {
-    printModel(m_startList);
+    printModel(m_filterStartList);
 }
 
 void MainWindow::on_pb_printResults_clicked()
 {
-    printModel(m_resultList);
+    printModel(m_filterResultList);
 }
 
 void MainWindow::on_pb_start4_clicked()
@@ -237,7 +243,30 @@ void MainWindow::on_pb_startChildren_clicked()
     ui->te_startTimeChildren->setTime(QTime().currentTime());
 }
 
-void MainWindow::on_actionBy_track_triggered()
+void MainWindow::on_action10_km_triggered()
 {
+    auto columns = m_resultList->columns();
+    QList<int> excludedColumns;
+    excludedColumns.append(columns["Ztrata na viteze"]);
+    excludedColumns.append(columns["Poradi v kategorii"]);
+    m_exportResultList->setFilterKeyColumn(columns["Trat"]);
+    m_exportResultList->setFilterFixedString("10 Km");
+    m_exportResultList->sort(columns["Celkove poradi"],
+                             Qt::SortOrder::AscendingOrder);
 
+    printModel(m_exportResultList, excludedColumns);
+}
+
+void MainWindow::on_action4_km_triggered()
+{
+    auto columns = m_resultList->columns();
+    QList<int> excludedColumns;
+    excludedColumns.append(columns["Ztrata na viteze"]);
+    excludedColumns.append(columns["Poradi v kategorii"]);
+    m_exportResultList->setFilterKeyColumn(columns["Trat"]);
+    m_exportResultList->setFilterFixedString("4 Km");
+    m_exportResultList->sort(columns["Celkove poradi"],
+                             Qt::SortOrder::AscendingOrder);
+
+    printModel(m_exportResultList, excludedColumns);
 }

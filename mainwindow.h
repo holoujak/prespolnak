@@ -13,6 +13,7 @@ class MainWindow;
 
 class QTimer;
 class QTime;
+class QAbstractProxyModel;
 
 class MainWindow : public QMainWindow
 {
@@ -23,7 +24,7 @@ public:
     ~MainWindow();
 
 private:
-    void printModel(RacerModel *pModel);
+    void printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns = QList<int>());
 
 private slots:
     void on_pb_start_clicked();
@@ -42,7 +43,9 @@ private slots:
 
     void on_pb_startChildren_clicked();
 
-    void on_actionBy_track_triggered();
+    void on_action10_km_triggered();
+
+    void on_action4_km_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -51,6 +54,7 @@ private:
     RacerModel *m_resultList;
     QSortFilterProxyModel *m_filterStartList;
     QSortFilterProxyModel *m_filterResultList;
+    QSortFilterProxyModel *m_exportResultList;
     ResultsDialog *m_resultsDialog;
 
     QMap<QString, QTime> m_winnersTime;

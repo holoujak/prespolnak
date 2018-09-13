@@ -111,3 +111,8 @@ Qt::ItemFlags RacerModel::flags(const QModelIndex &index) const
     Q_UNUSED(index)
     return Qt::ItemIsSelectable |  Qt::ItemIsEditable | Qt::ItemIsEnabled;
 }
+
+QMap<QString, int> &RacerModel::columns()
+{
+    return m_columns;
+}

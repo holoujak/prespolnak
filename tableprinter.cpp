@@ -58,7 +58,7 @@ TablePrinter::TablePrinter(QPainter* painter, QPrinter* printer) :
 }
 
 bool TablePrinter::printTable(const QAbstractItemModel* model, const QVector<int> columnStretch,
-                              const QVector<QString> headers) {
+                              const QVector<QString> headers, const QList<int> excludedColumns) {
 
     //--------------------------------- error checking -------------------------------------
 
@@ -88,6 +88,10 @@ bool TablePrinter::printTable(const QAbstractItemModel* model, const QVector<int
     }
     int totalStretch = 0;
     for (int i = 0; i < columnStretch.count(); i++) {
+        if (excludedColumns.contains(i)) {
+            continue;
+        }
+
         if(columnStretch[i] < 0) {
             error = QString("wrong column stretch, columnt: %1 stretch: %2").arg(i).arg(columnStretch[i]);
             return false;
@@ -144,7 +148,11 @@ bool TablePrinter::printTable(const QAbstractItemModel* model, const QVector<int
         // --------------------------- row height counting ----------------------------
 
         int maxHeight = 0; // max row Height
-        for(int i = 0; i < columnCount; i++) { // for each column
+        for(int i = 0; i < model->columnCount(); i++) { // for each column
+            if (excludedColumns.contains(i)) {
+                continue;
+            }
+
             QString str;
             if(j >= 0) {
                 str = model->data(model->index(j,i), Qt::DisplayRole).toString();
@@ -188,7 +196,11 @@ bool TablePrinter::printTable(const QAbstractItemModel* model, const QVector<int
 
         painter->save();
         j >= 0 ? painter->setPen(QPen(contentColor)) : painter->setPen(QPen(headerColor));
-        for(int i = 0; i < columnCount; i++) { // for each column
+        for(int i = 0; i < model->columnCount(); i++) { // for each column
+            if (excludedColumns.contains(i)) {
+                continue;
+            }
+
             QString str;
             if(j >= 0) {
                 str = model->data(model->index(j,i), Qt::DisplayRole).toString();
@@ -210,6 +222,9 @@ bool TablePrinter::printTable(const QAbstractItemModel* model, const QVector<int
     painter->restore();
     painter->save();
     for(int i = 0; i < columnCount; i++) { // vertical lines
+        if (excludedColumns.contains(i)) {
+            continue;
+        }
         painter->drawLine(0, 0, 0,
                           - painter->transform().dy() + y);
         painter->translate(columnWidth[i], 0);
