@@ -237,6 +237,10 @@ void MainWindow::on_pb_loadResults_clicked()
         QList<Racer> racers = loader.loadRacers(fileName);
 
         m_resultList->addRacers(racers);
+        for (auto racer : racers) {
+            m_lastTrackRank[racer.track()]++;
+            m_lastCategoryRank[racer.category()]++;
+        }
     }
 }
 
