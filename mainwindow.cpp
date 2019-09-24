@@ -12,10 +12,13 @@
 #include <QPainter>
 #include <QtPrintSupport/QPrintDialog>
 #include <QScrollBar>
+#include <QJsonDocument>
+#include <QSpinBox>
 
 #include "tableprinter.h"
 #include "racersloader.h"
 #include "resultsdialog.h"
+#include "restclient.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -157,13 +160,17 @@ void MainWindow::on_le_runnerID_returnPressed()
 
     if (racer.startNumber() == racerID && m_resultList->findRacer(racerID).startNumber() == -1) {
         QTime time;
+        QDateTime startTime;
+        QDateTime finishTime = QDateTime::currentDateTime();
         if (racer.category().endsWith("10")) {
-
-            time = QTime::fromMSecsSinceStartOfDay(ui->te_startTime->time().msecsTo(QTime::currentTime()));
+            startTime = QDateTime(QDate::currentDate(), ui->te_startTime->time());
+            time = QTime::fromMSecsSinceStartOfDay(startTime.time().msecsTo(finishTime.time()));
         } else if (racer.category().endsWith("4")) {
-            time = QTime::fromMSecsSinceStartOfDay(ui->te_startTime4->time().msecsTo(QTime::currentTime()));
+            startTime = QDateTime(QDate::currentDate(), ui->te_startTime4->time());
+            time = QTime::fromMSecsSinceStartOfDay(startTime.time().msecsTo(finishTime.time()));
         } else {
-            time = QTime::fromMSecsSinceStartOfDay(ui->te_startTimeChildren->time().msecsTo(QTime::currentTime()));
+            startTime = QDateTime(QDate::currentDate(), ui->te_startTimeChildren->time());
+            time = QTime::fromMSecsSinceStartOfDay(startTime.time().msecsTo(finishTime.time()));
         }
 
         if (!m_winnersTime.contains(racer.category())) {
@@ -173,6 +180,8 @@ void MainWindow::on_le_runnerID_returnPressed()
         racer.setTrackRank(m_lastTrackRank[racer.track()]);
         racer.setCategoryRank(m_lastCategoryRank[racer.category()]);
         racer.setTime(time);
+        racer.setStartTime(startTime);
+        racer.setFinishTime(finishTime);
         racer.setTimeByWinner(QTime::fromMSecsSinceStartOfDay(m_winnersTime[racer.category()].msecsTo(time)));
 
         m_lastTrackRank[racer.track()]++;
@@ -184,6 +193,51 @@ void MainWindow::on_le_runnerID_returnPressed()
 
         RacersLoader loader;
         QString dbFilePath = QString("%1/racers-%2.csv").arg(QDir::homePath()).arg(ui->te_startTime->time().toString("HH-mm-ss"));
+        loader.storeRacers(dbFilePath, m_resultList->racers());
+    }
+
+    ui->le_runnerID->clear();
+}
+
+void MainWindow::resultImport(Racer &racer)
+{
+    short racerID = racer.startNumber();
+
+    if (racer.startNumber() == racerID && m_resultList->findRacer(racerID).startNumber() == -1) {
+        QTime time;
+
+        if (!m_winnersTime.contains(racer.category())) {
+            m_winnersTime.insert(racer.category(), time);
+        }
+
+        racer.setTrackRank(m_lastTrackRank[racer.track()]);
+        racer.setCategoryRank(m_lastCategoryRank[racer.category()]);
+        racer.setTimeByWinner(QTime::fromMSecsSinceStartOfDay(m_winnersTime[racer.category()].msecsTo(time)));
+
+        if (racer.startTime().isNull() || racer.finishTime().isNull()) {
+            QDateTime startTime;
+            QDateTime finishTime;
+            if (racer.category().endsWith("10")) {
+                startTime = QDateTime(QDate::currentDate(), ui->te_startTime->time());
+            } else if (racer.category().endsWith("4")) {
+                startTime = QDateTime(QDate::currentDate(), ui->te_startTime4->time());
+            } else {
+                startTime = QDateTime(QDate::currentDate(), ui->te_startTimeChildren->time());
+            }
+            finishTime = startTime.addMSecs(racer.time().msecsSinceStartOfDay());
+
+            racer.setStartTime(startTime);
+            racer.setFinishTime(finishTime);
+        }
+        m_lastTrackRank[racer.track()]++;
+        m_lastCategoryRank[racer.category()]++;
+        m_resultList->addRacer(racer);
+
+        QApplication::processEvents();
+        ui->tv_results->verticalScrollBar()->setValue(ui->tv_results->verticalScrollBar()->maximum());
+
+        RacersLoader loader;
+        QString dbFilePath = QString("%1/racers-new-%2.csv").arg(QDir::homePath()).arg(ui->te_startTime->time().toString("HH-mm-ss"));
         loader.storeRacers(dbFilePath, m_resultList->racers());
     }
 
@@ -236,11 +290,14 @@ void MainWindow::on_pb_loadResults_clicked()
         RacersLoader loader;
         QList<Racer> racers = loader.loadRacers(fileName);
 
-        m_resultList->addRacers(racers);
         for (auto racer : racers) {
-            m_lastTrackRank[racer.track()]++;
-            m_lastCategoryRank[racer.category()]++;
+            resultImport(racer);
         }
+//        m_resultList->addRacers(racers);
+//        for (auto racer : racers) {
+//            m_lastTrackRank[racer.track()]++;
+//            m_lastCategoryRank[racer.category()]++;
+//        }
     }
 }
 
@@ -290,4 +347,41 @@ void MainWindow::on_track_export_triggered(const QString track)
                              Qt::SortOrder::AscendingOrder);
 
     printModel(m_exportResultList, excludedColumns);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    RacersLoader loader;
+    QList<Racer> racers = loader.loadRacersFromWeb(static_cast<uint8_t>(ui->race_id_spinbox->value()));
+    QSet<QString> categories;
+    QSet<QString> tracks;
+
+    for (Racer racer : racers) {
+        categories << racer.category();
+        tracks << racer.track();
+
+        if (!m_lastCategoryRank.contains(racer.category())) {
+            m_lastCategoryRank.insert(racer.category(), 1);
+        }
+        if (!m_lastTrackRank.contains(racer.track())) {
+            m_lastTrackRank.insert(racer.track(), 1);
+        }
+    }
+    m_startList->addRacers(racers);
+
+    for (auto category : categories) {
+        QAction *categoryAction = ui->menuBy_category->addAction(category);
+        connect(categoryAction, &QAction::triggered, [=]() { on_category_export_triggered(category); });
+    }
+
+    for (auto track : tracks) {
+        QAction *trackAction = ui->menuBy_track->addAction(track);
+        connect(trackAction, &QAction::triggered, [=]() { on_track_export_triggered(track); });
+    }
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    RestClient client;
+    client.addResults(ui->race_id_spinbox->value(), m_resultList->racers());
 }

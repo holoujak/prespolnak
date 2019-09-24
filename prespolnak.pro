@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport
+QT       += core gui printsupport network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,6 +30,7 @@ SOURCES += \
         racer.cpp \
         racermodel.cpp \
     racersloader.cpp \
+    restclient.cpp \
     tableprinter.cpp \
     resultsdialog.cpp
 
@@ -38,6 +39,7 @@ HEADERS += \
         racer.h \
         racermodel.h \
     racersloader.h \
+    restclient.h \
     tableprinter.h \
     resultsdialog.h
 
