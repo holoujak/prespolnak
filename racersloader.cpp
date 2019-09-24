@@ -1,8 +1,11 @@
 #include "racersloader.h"
+#include "restclient.h"
 
 #include <QFile>
 #include <QStringList>
 #include <QTextStream>
+#include <QJsonDocument>
+#include <QJsonArray>
 
 RacersLoader::RacersLoader()
 {
@@ -22,6 +25,22 @@ QList<Racer> RacersLoader::loadRacers(const QString &path)
     }
 
     file.close();
+
+    return racers;
+}
+
+QList<Racer> RacersLoader::loadRacersFromWeb(const uint8_t raceId)
+{
+    RestClient client;
+    QList<Racer> racers;
+    QJsonDocument racersJson;
+
+    client.registrations(raceId, racersJson);
+    QJsonArray racersArray = racersJson.array();
+    for (int j = 0; j < racersArray.count(); j++)
+    {
+        racers.append(Racer::fromJson(racersArray.at(j).toObject()));
+    }
 
     return racers;
 }

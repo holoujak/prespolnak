@@ -27,6 +27,7 @@ private:
     void printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns = QList<int>());
     void on_category_export_triggered(const QString category);
     void on_track_export_triggered(const QString track);
+    void resultImport(Racer &racer);
 
 private slots:
     void on_pb_start_clicked();
@@ -44,6 +45,10 @@ private slots:
     void on_pb_start4_clicked();
 
     void on_pb_startChildren_clicked();
+
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
 
 private:
     Ui::MainWindow *ui;

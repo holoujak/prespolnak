@@ -1,5 +1,7 @@
 #include "racer.h"
 
+#include <QVariantMap>
+
 QString RACER_SEPARATOR = ";";
 
 Racer::Racer(short id, short startNumber, short year, QString name, QString surname, QString track, QString category, QString city)
@@ -12,6 +14,8 @@ Racer::Racer(short id, short startNumber, short year, QString name, QString surn
     m_track = track.trimmed();
     m_category = category.trimmed();
     m_city = city.trimmed();
+    m_startTime = QDateTime();
+    m_finishTime = QDateTime();
 }
 
 short Racer::id() const
@@ -55,6 +59,16 @@ void Racer::setTime(const QTime &time)
         m_timeByWinner = m_timeByWinner.addSecs(m_time.secsTo(time));
     }
     m_time = time;
+}
+
+void Racer::setStartTime(const QDateTime &time)
+{
+    m_startTime = time;
+}
+
+void Racer::setFinishTime(const QDateTime &time)
+{
+    m_finishTime = time;
 }
 
 void Racer::setId(short id)
@@ -123,6 +137,20 @@ Racer Racer::fromString(QString racerString)
     return racer;
 }
 
+Racer Racer::fromJson(QJsonObject racerJson)
+{
+    Racer racer(-1, -1, -1, "", "", "", "", "");
+    QVariantMap mainMap = racerJson.toVariantMap();
+    int racerStartNumber = 1 + ( std::rand() % ( 100 - 1 + 1 ) );
+    racer.setId(mainMap["id"].toInt());
+    racer.setStartNumber(mainMap["startNumber"].toInt());
+    racer.setStartNumber(racerStartNumber);
+    racer.setName(mainMap["firstName"].toString());
+    racer.setSurname(mainMap["lastName"].toString());
+    racer.setCategory(mainMap["categories"].toList()[0].toMap()["name"].toString());
+    return racer;
+}
+
 QString Racer::surname() const
 {
     return m_surname;
@@ -156,6 +184,16 @@ void Racer::setCategoryRank(short categoryRank)
 QTime Racer::timeByWiner() const
 {
     return m_timeByWinner;
+}
+
+QDateTime Racer::startTime() const
+{
+    return m_startTime;
+}
+
+QDateTime Racer::finishTime() const
+{
+    return m_finishTime;
 }
 
 void Racer::setTimeByWinner(const QTime &timeByWiner)

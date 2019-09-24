@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QTime>
+#include <QJsonObject>
 
 class Racer
 {
@@ -16,8 +17,12 @@ public:
     QString category() const;
     QString city() const;
     QTime time() const;
+    QDateTime startTime() const;
+    QDateTime finishTime() const;
 
     void setTime(const QTime &time);
+    void setStartTime(const QDateTime &time);
+    void setFinishTime(const QDateTime &time);
 
     void setId(short id);
 
@@ -33,7 +38,8 @@ public:
 
     QString toString();
 
-    static Racer fromString(QString racer);
+    static Racer fromString(QString racerString);
+    static Racer fromJson(QJsonObject racerJson);
 
     QString surname() const;
     void setSurname(const QString &surname);
@@ -62,6 +68,8 @@ private:
     QString m_city;
     QString m_year;
     QTime m_time;
+    QDateTime m_startTime;
+    QDateTime m_finishTime;
     QTime m_timeByWinner;
 };
 
