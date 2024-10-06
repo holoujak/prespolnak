@@ -11,10 +11,8 @@ const QMap<QString, int> DEFAULT_RACERS_COLUMNS = {
     {"Cislo", 0},
     {"Jmeno", 1},
     {"Prijmeni", 2},
-    {"Trat", 3},
-    {"Mesto", 4},
-    {"Kategorie", 5},
-    {"Rocnik", 6},
+    {"Kategorie", 3},
+    {"RFIDTag", 4},
 };
 class RacerModel : public QAbstractTableModel
 {
@@ -43,6 +41,7 @@ public:
     QMap<QString, int> &columns();
 
     Racer findRacer(short startNumber);
+    Racer findRacerByTagId(QString tagId);
 
     // QAbstractItemModel interface
 };

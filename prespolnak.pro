@@ -30,7 +30,9 @@ SOURCES += \
         racer.cpp \
         racermodel.cpp \
     racersloader.cpp \
+    reader.cpp \
     restclient.cpp \
+    rfidreader.cpp \
     tableprinter.cpp \
     resultsdialog.cpp
 
@@ -39,10 +41,24 @@ HEADERS += \
         racer.h \
         racermodel.h \
     racersloader.h \
+    reader.h \
     restclient.h \
+    rfidreader.h \
     tableprinter.h \
-    resultsdialog.h
+    resultsdialog.h \
+    CFHidApi.h
 
 FORMS += \
         mainwindow.ui \
+    reader.ui \
     resultsdialog.ui
+
+
+unix: LIBS += -L$$PWD/./ -lCFHidApi
+unix: LIBS += -L$$PWD/./ -lusb-1.0
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.
+
+unix: PRE_TARGETDEPS += $$PWD/./libCFHidApi.a
+unix: PRE_TARGETDEPS += $$PWD/./libusb-1.0.a

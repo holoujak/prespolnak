@@ -5,10 +5,12 @@
 #include <QTime>
 #include <QJsonObject>
 
+const QString LAZECACI = "Mokré Lazce";
+
 class Racer
 {
 public:
-    Racer(short id, short startNumber, short year, QString name, QString surname, QString track, QString category, QString city);
+    Racer(short id, short startNumber, short year, QString name, QString surname, QString track, QString category, QString city, QString tagId);
 
     short id() const;
     short startNumber() const;
@@ -19,6 +21,7 @@ public:
     QTime time() const;
     QDateTime startTime() const;
     QDateTime finishTime() const;
+    QString tagId() const;
 
     void setTime(const QTime &time);
     void setStartTime(const QDateTime &time);
@@ -35,6 +38,8 @@ public:
     void setCategory(const QString &category);
 
     void setCity(const QString &city);
+
+    void setTagId(const QString &tagId);
 
     QString toString();
 
@@ -67,6 +72,7 @@ private:
     QString m_category;
     QString m_city;
     QString m_year;
+    QString m_tagId;
     QTime m_time;
     QDateTime m_startTime;
     QDateTime m_finishTime;

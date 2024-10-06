@@ -48,14 +48,12 @@ QVariant RacerModel::data(const QModelIndex &index, int role) const
             case 0: return m_racers[index.row()].startNumber();
             case 1: return m_racers[index.row()].name();
             case 2: return m_racers[index.row()].surname();
-            case 3: return m_racers[index.row()].track();
-            case 4: return m_racers[index.row()].city();
-            case 5: return m_racers[index.row()].category();
-            case 6: return m_racers[index.row()].year();
-            case 7: return m_racers[index.row()].time().toString("HH:mm:ss");
-            case 8: return m_racers[index.row()].timeByWiner().toString("HH:mm:ss");
-            case 9: return m_racers[index.row()].categoryRank();
-            case 10: return m_racers[index.row()].trackRank();
+            case 3: return m_racers[index.row()].category();
+            case 4: return m_racers[index.row()].tagId();
+            case 5: return m_racers[index.row()].time().toString("HH:mm:ss");
+            case 6: return m_racers[index.row()].timeByWiner().toString("HH:mm:ss");
+            case 7: return m_racers[index.row()].categoryRank();
+            case 8: return m_racers[index.row()].trackRank();
         }
     }
     return QVariant();
@@ -69,7 +67,18 @@ Racer RacerModel::findRacer(short startNumber)
         }
     }
 
-    return Racer(-1, -1, -1, "", "", "", "", "");
+    return Racer(-1, -1, -1, "", "", "", "", "", "");
+}
+
+Racer RacerModel::findRacerByTagId(QString tagId)
+{
+    foreach (Racer racer, m_racers) {
+        if (racer.tagId() == tagId) {
+            return racer;
+        }
+    }
+
+    return Racer(-1, -1, -1, "", "", "", "", "", "");
 }
 
 QVariant RacerModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -93,14 +102,12 @@ bool RacerModel::setData(const QModelIndex &index, const QVariant &value, int ro
             case 0: racer.setStartNumber(value.toInt()); break;
             case 1: racer.setName(value.toString()); break;
             case 2: racer.setSurname(value.toString()); break;
-            case 3: racer.setTrack(value.toString()); break;
-            case 4: racer.setCity(value.toString()); break;
-            case 5: racer.setCategory(value.toString()); break;
-            case 6: racer.setYear(value.toString()); break;
-            case 7: racer.setTime(QTime::fromString(value.toString(), "HH:mm:ss")); break;
-            case 8: racer.setTimeByWinner(QTime::fromString(value.toString(), "HH:mm:ss")); break;
-            case 9: racer.setCategoryRank(value.toInt()); break;
-            case 10: racer.setTrackRank(value.toInt()); break;
+            case 3: racer.setCategory(value.toString()); break;
+            case 4: racer.setTagId(value.toString()); break;
+            case 5: racer.setTime(QTime::fromString(value.toString(), "HH:mm:ss")); break;
+            case 6: racer.setTimeByWinner(QTime::fromString(value.toString(), "HH:mm:ss")); break;
+            case 7: racer.setCategoryRank(value.toInt()); break;
+            case 8: racer.setTrackRank(value.toInt()); break;
         }
     }
     return true;

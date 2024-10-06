@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>978</width>
-    <height>660</height>
+    <height>728</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,9 +30,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-86</y>
-            <width>449</width>
-            <height>196</height>
+            <y>0</y>
+            <width>448</width>
+            <height>240</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -84,9 +84,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-20</y>
-            <width>449</width>
-            <height>196</height>
+            <y>0</y>
+            <width>448</width>
+            <height>240</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -360,27 +360,28 @@
      <x>0</x>
      <y>0</y>
      <width>978</width>
-     <height>20</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuExport">
     <property name="title">
-     <string>Export...</string>
+     <string>E&amp;xport...</string>
     </property>
     <widget class="QMenu" name="menuBy_track">
      <property name="title">
-      <string>Podle trati</string>
+      <string>&amp;Podle trati</string>
      </property>
      <addaction name="separator"/>
     </widget>
     <widget class="QMenu" name="menuBy_category">
      <property name="title">
-      <string>Podle kategorie</string>
+      <string>Podle &amp;kategorie</string>
      </property>
      <addaction name="separator"/>
     </widget>
     <addaction name="menuBy_track"/>
     <addaction name="menuBy_category"/>
+    <addaction name="actionLazecaci"/>
    </widget>
    <addaction name="menuExport"/>
   </widget>
@@ -393,6 +394,11 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionLazecaci">
+   <property name="text">
+    <string>Lazecaci</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
