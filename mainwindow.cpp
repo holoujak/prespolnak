@@ -19,6 +19,8 @@
 #include "racersloader.h"
 #include "resultsdialog.h"
 #include "restclient.h"
+#include "reader.h"
+#include "CFHidApi.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -29,10 +31,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_startList = new RacerModel(DEFAULT_RACERS_COLUMNS, this);
 
     QMap<QString, int> resultColums = DEFAULT_RACERS_COLUMNS;
-    resultColums.insert("Cas", 7);
-    resultColums.insert("Ztrata na viteze", 8);
-    resultColums.insert("Poradi v kategorii", 9);
-    resultColums.insert("Celkove poradi", 10);
+    resultColums.insert("Cas", 5);
+    resultColums.insert("Ztrata na viteze", 6);
+    resultColums.insert("Poradi v kategorii", 7);
+    resultColums.insert("Celkove poradi", 8);
     m_resultList = new RacerModel(resultColums, this);
 
     m_filterStartList = new QSortFilterProxyModel(this);
@@ -86,8 +88,14 @@ MainWindow::MainWindow(QWidget *parent) :
         m_filterResultList->sort(logicalIndex, order);
     });
 
+    m_rfidReader = new RFIDReader("/dev/ttyUSB0", "/dev/ttyUSB1");
     m_resultsDialog = new ResultsDialog(m_filterResultList, this);
     m_resultsDialog->show();
+
+    m_readerDialog = new Reader(m_rfidReader, this);
+    m_readerDialog->show();
+
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 MainWindow::~MainWindow()
@@ -151,6 +159,16 @@ void MainWindow::printModel(QAbstractProxyModel *pModel, QList<int> excludedColu
 void MainWindow::on_pb_start_clicked()
 {
     ui->te_startTime->setTime(QTime().currentTime());
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
+}
+
+void MainWindow::onNewTagRead(QString tagId)
+{
+    Racer racer = m_startList->findRacerByTagId(tagId);
+    if (racer.startNumber() != -1)
+    {
+        addRacerResult(racer);
+    }
 }
 
 void MainWindow::on_le_runnerID_returnPressed()
@@ -158,7 +176,15 @@ void MainWindow::on_le_runnerID_returnPressed()
     short racerID = ui->le_runnerID->text().toInt();
     Racer racer = m_startList->findRacer(racerID);
 
-    if (racer.startNumber() == racerID && m_resultList->findRacer(racerID).startNumber() == -1) {
+    if (racer.startNumber() != -1)
+    {
+        addRacerResult(racer);
+    }
+}
+
+void MainWindow::addRacerResult(Racer& racer)
+{
+    if (m_resultList->findRacer(racer.startNumber()).startNumber() == -1) {
         QTime time;
         QDateTime startTime;
         QDateTime finishTime = QDateTime::currentDateTime();
@@ -204,30 +230,35 @@ void MainWindow::resultImport(Racer &racer)
     short racerID = racer.startNumber();
 
     if (racer.startNumber() == racerID && m_resultList->findRacer(racerID).startNumber() == -1) {
-        QTime time;
 
-        if (!m_winnersTime.contains(racer.category())) {
-            m_winnersTime.insert(racer.category(), time);
+        QDateTime startTime;
+
+        if (racer.category().endsWith("10")) {
+            startTime = QDateTime(QDate::currentDate(), ui->te_startTime->time());
+        } else if (racer.category().endsWith("4")) {
+            startTime = QDateTime(QDate::currentDate(), ui->te_startTime4->time());
+        } else {
+            startTime = QDateTime(QDate::currentDate(), ui->te_startTimeChildren->time());
         }
 
         racer.setTrackRank(m_lastTrackRank[racer.track()]);
         racer.setCategoryRank(m_lastCategoryRank[racer.category()]);
-        racer.setTimeByWinner(QTime::fromMSecsSinceStartOfDay(m_winnersTime[racer.category()].msecsTo(time)));
 
         if (racer.startTime().isNull() || racer.finishTime().isNull()) {
-            QDateTime startTime;
+
             QDateTime finishTime;
-            if (racer.category().endsWith("10")) {
-                startTime = QDateTime(QDate::currentDate(), ui->te_startTime->time());
-            } else if (racer.category().endsWith("4")) {
-                startTime = QDateTime(QDate::currentDate(), ui->te_startTime4->time());
-            } else {
-                startTime = QDateTime(QDate::currentDate(), ui->te_startTimeChildren->time());
-            }
+            QTime time;
+
             finishTime = startTime.addMSecs(racer.time().msecsSinceStartOfDay());
+            time = QTime::fromMSecsSinceStartOfDay(startTime.time().msecsTo(finishTime.time()));
+
+            if (!m_winnersTime.contains(racer.category())) {
+                m_winnersTime.insert(racer.category(), time);
+            }
 
             racer.setStartTime(startTime);
             racer.setFinishTime(finishTime);
+            racer.setTimeByWinner(QTime::fromMSecsSinceStartOfDay(m_winnersTime[racer.category()].msecsTo(time)));
         }
         m_lastTrackRank[racer.track()]++;
         m_lastCategoryRank[racer.category()]++;
@@ -314,11 +345,13 @@ void MainWindow::on_pb_printResults_clicked()
 void MainWindow::on_pb_start4_clicked()
 {
     ui->te_startTime4->setTime(QTime().currentTime());
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 void MainWindow::on_pb_startChildren_clicked()
 {
     ui->te_startTimeChildren->setTime(QTime().currentTime());
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 void MainWindow::on_category_export_triggered(const QString category)
@@ -384,4 +417,30 @@ void MainWindow::on_pushButton_2_clicked()
 {
     RestClient client;
     client.addResults(ui->race_id_spinbox->value(), m_resultList->racers());
+}
+
+void MainWindow::on_actionLazecaci_triggered()
+{
+    auto columns = m_resultList->columns();
+
+    auto results = m_resultList->racers();
+    auto lazecaci = new RacerModel(columns, this);
+
+    for (auto racer : results) {
+        if (racer.city() == LAZECACI) {
+            lazecaci->addRacer(racer);
+        }
+    }
+
+    m_exportResultList->setSourceModel(lazecaci);
+
+    QList<int> excludedColumns;
+    //excludedColumns.append(columns["Ztrata na viteze"]);
+    excludedColumns.append(columns["Celkove poradi"]);
+    m_exportResultList->sort(columns["Celkove poradi"],
+                             Qt::SortOrder::AscendingOrder);
+
+    printModel(m_exportResultList, excludedColumns);
+
+    m_exportResultList->setSourceModel(m_resultList);
 }

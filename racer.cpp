@@ -4,7 +4,7 @@
 
 QString RACER_SEPARATOR = ";";
 
-Racer::Racer(short id, short startNumber, short year, QString name, QString surname, QString track, QString category, QString city)
+Racer::Racer(short id, short startNumber, short year, QString name, QString surname, QString track, QString category, QString city, QString tagId)
 {
     m_id = id;
     m_startNumber = startNumber;
@@ -16,6 +16,7 @@ Racer::Racer(short id, short startNumber, short year, QString name, QString surn
     m_city = city.trimmed();
     m_startTime = QDateTime();
     m_finishTime = QDateTime();
+    m_tagId = tagId.trimmed();
 }
 
 short Racer::id() const
@@ -51,6 +52,11 @@ QString Racer::city() const
 QTime Racer::time() const
 {
     return m_time;
+}
+
+QString Racer::tagId() const
+{
+    return m_tagId;
 }
 
 void Racer::setTime(const QTime &time)
@@ -101,19 +107,25 @@ void Racer::setCity(const QString &city)
     m_city = city.trimmed();
 }
 
+void Racer::setTagId(const QString &tagId)
+{
+    m_tagId = tagId.trimmed();
+}
+
 QString Racer::toString()
 {
     QString racerString = QString::number(m_id) + RACER_SEPARATOR + QString::number(m_startNumber) + RACER_SEPARATOR +
                           m_name + RACER_SEPARATOR + m_surname + RACER_SEPARATOR + m_track + RACER_SEPARATOR +
                           m_city + RACER_SEPARATOR + m_category + RACER_SEPARATOR + m_year + RACER_SEPARATOR +
                           m_time.toString().trimmed() + RACER_SEPARATOR + m_timeByWinner.toString().trimmed() +
-                          RACER_SEPARATOR + QString::number(m_categoryRank) + RACER_SEPARATOR + QString::number(m_trackRank);
+                          RACER_SEPARATOR + QString::number(m_categoryRank) + RACER_SEPARATOR + QString::number(m_trackRank) +
+                          RACER_SEPARATOR + m_tagId;
     return racerString;
 }
 
 Racer Racer::fromString(QString racerString)
 {
-    Racer racer(-1, -1, -1, "", "", "", "", "");
+    Racer racer(-1, -1, -1, "", "", "", "", "", "");
     QStringList parts = racerString.trimmed().replace("\"", "").split(RACER_SEPARATOR);
 
     for (int i = 0; i < parts.length(); i++) {
@@ -131,6 +143,7 @@ Racer Racer::fromString(QString racerString)
             case 9: racer.setTimeByWinner(QTime::fromString(trimmed)); break;
             case 10: racer.setCategoryRank(trimmed.toShort()); break;
             case 11: racer.setTrackRank(trimmed.toShort()); break;
+            case 12: racer.setTagId(trimmed); break;
         }
     }
 
@@ -139,15 +152,17 @@ Racer Racer::fromString(QString racerString)
 
 Racer Racer::fromJson(QJsonObject racerJson)
 {
-    Racer racer(-1, -1, -1, "", "", "", "", "");
+    Racer racer(-1, -1, -1, "", "", "", "", "", "");
     QVariantMap mainMap = racerJson.toVariantMap();
-    int racerStartNumber = 1 + ( std::rand() % ( 100 - 1 + 1 ) );
+    //int racerStartNumber = 1 + ( std::rand() % ( 100 - 1 + 1 ) );
     racer.setId(mainMap["id"].toInt());
     racer.setStartNumber(mainMap["startNumber"].toInt());
-    racer.setStartNumber(racerStartNumber);
+    //racer.setStartNumber(racerStartNumber);
     racer.setName(mainMap["firstName"].toString());
     racer.setSurname(mainMap["lastName"].toString());
-    racer.setCategory(mainMap["categories"].toList()[0].toMap()["name"].toString());
+    racer.setCategory(mainMap["categories"].toList().at(0).toMap()["name"].toString());
+    racer.setTrack(mainMap["track"].toMap()["name"].toString());
+    racer.setTagId(mainMap["tagId"].toString());
     return racer;
 }
 

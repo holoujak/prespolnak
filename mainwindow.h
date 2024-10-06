@@ -6,6 +6,8 @@
 #include <QMap>
 #include "racermodel.h"
 #include "resultsdialog.h"
+#include "reader.h"
+#include "rfidreader.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,6 +30,7 @@ private:
     void on_category_export_triggered(const QString category);
     void on_track_export_triggered(const QString track);
     void resultImport(Racer &racer);
+    void addRacerResult(Racer &racer);
 
 private slots:
     void on_pb_start_clicked();
@@ -50,6 +53,9 @@ private slots:
 
     void on_pushButton_2_clicked();
 
+    void onNewTagRead(QString tagId);
+    void on_actionLazecaci_triggered();
+
 private:
     Ui::MainWindow *ui;
     QTimer *m_timer;
@@ -59,6 +65,8 @@ private:
     QSortFilterProxyModel *m_filterResultList;
     QSortFilterProxyModel *m_exportResultList;
     ResultsDialog *m_resultsDialog;
+    Reader *m_readerDialog;
+    RFIDReader *m_rfidReader;
 
     QMap<QString, QTime> m_winnersTime;
     QMap<QString, short> m_lastTrackRank;

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport network
+QT       += core gui printsupport network serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,19 +30,27 @@ SOURCES += \
         racer.cpp \
         racermodel.cpp \
     racersloader.cpp \
+    reader.cpp \
     restclient.cpp \
+    rfidreader.cpp \
     tableprinter.cpp \
-    resultsdialog.cpp
+    resultsdialog.cpp \
 
 HEADERS += \
         mainwindow.h \
         racer.h \
         racermodel.h \
     racersloader.h \
+    reader.h \
     restclient.h \
+    rfidreader.h \
     tableprinter.h \
-    resultsdialog.h
+    resultsdialog.h \
 
 FORMS += \
         mainwindow.ui \
+    reader.ui \
     resultsdialog.ui
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.
