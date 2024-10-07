@@ -3,18 +3,18 @@
 
 #include <QTableWidget>
 
-Reader::Reader(RFIDReader& rfidReader, QWidget *parent) :
+Reader::Reader(RFIDReader* rfidReader, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Reader),
     m_rfidReader(rfidReader)
 {
     ui->setupUi(this);
-    connect(&m_rfidReader, &RFIDReader::tagRead, this, &Reader::onNewTagRead);
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &Reader::onNewTagRead);
 }
 
 Reader::~Reader()
 {
-    disconnect(&m_rfidReader, &RFIDReader::tagRead, this, &Reader::onNewTagRead);
+    disconnect(m_rfidReader, &RFIDReader::tagRead, this, &Reader::onNewTagRead);
     delete ui;
 }
 

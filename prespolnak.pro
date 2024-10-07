@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui printsupport network
+QT       += core gui printsupport network serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -34,7 +34,7 @@ SOURCES += \
     restclient.cpp \
     rfidreader.cpp \
     tableprinter.cpp \
-    resultsdialog.cpp
+    resultsdialog.cpp \
 
 HEADERS += \
         mainwindow.h \
@@ -46,19 +46,11 @@ HEADERS += \
     rfidreader.h \
     tableprinter.h \
     resultsdialog.h \
-    CFHidApi.h
 
 FORMS += \
         mainwindow.ui \
     reader.ui \
     resultsdialog.ui
 
-
-unix: LIBS += -L$$PWD/./ -lCFHidApi
-unix: LIBS += -L$$PWD/./ -lusb-1.0
-
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
-
-unix: PRE_TARGETDEPS += $$PWD/./libCFHidApi.a
-unix: PRE_TARGETDEPS += $$PWD/./libusb-1.0.a

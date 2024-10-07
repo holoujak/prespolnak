@@ -14,12 +14,12 @@ class Reader : public QDialog
     Q_OBJECT
 
 public:
-    explicit Reader(RFIDReader& rfidReader, QWidget *parent = nullptr);
+    explicit Reader(RFIDReader* rfidReader, QWidget *parent = nullptr);
     ~Reader();
 
 private:
     Ui::Reader *ui;
-    RFIDReader& m_rfidReader;
+    RFIDReader* m_rfidReader;
 
 private slots:
     void onNewTagRead(QString tagId);

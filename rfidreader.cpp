@@ -1,76 +1,63 @@
 #include "rfidreader.h"
-#include "CFHidApi.h"
+#include <QDebug>
+#include <cstdio>
 
-RFIDReader* g_pReader;
+// Konstruktor RFIDReader, který inicializuje sériové porty
+RFIDReader::RFIDReader(const QString &portName1, const QString &portName2, QObject *parent)
+    : QObject(parent), serialPort1(new QSerialPort(this)), serialPort2(new QSerialPort(this)) {
 
-RFIDReader::RFIDReader(QObject *parent) : QObject(parent)
-{
-    g_pReader = this;
-
-    CFHid_OpenDevice();
-    CFHid_SetCallback(CallBackFunc);
-    CFHid_StartRead(0xFF);
-}
-
-RFIDReader::~RFIDReader()
-{
-    CFHid_StopRead(0xFF);
-    CFHid_SetCallback(nullptr);
-    CFHid_CloseDevice();
-}
-
-void RFIDReader::parseTagId(unsigned char *pTag, unsigned char bTagLength)
-{
-    int iIndex = 0;
-    QString strCnt, strTemp="";
-    QString strTagLength;
-    QString strID="";
-
-    if(bTagLength < 2 || bTagLength > 32) {return;}
-
-    //ID
-    for(iIndex = 2; iIndex < bTagLength-1; iIndex ++)
-    {
-        strTemp.sprintf("%.2X",pTag[iIndex]);
-        strID = strID + strTemp;
+    // Nastavení prvního sériového portu
+    if (!portName1.isEmpty()) {
+        setupSerialPort(serialPort1, portName1);
     }
 
-    emit tagRead(strID);
+    // Nastavení druhého sériového portu
+    if (!portName2.isEmpty()) {
+        setupSerialPort(serialPort2, portName2);
+    }
 }
 
-bool RFIDReader::addTagBuffer(const unsigned char *pBuffer, const unsigned short iTagLength, const unsigned short iTagNum)
-{
-    if(iTagNum== 0) return false;
-    int iIndex = 0;
-    int iLength = 0;
-    unsigned char *pID;
-    unsigned char bPackLength = 0;
-    if(iTagLength > 1400) return false;
-    if(iTagNum >100 || iTagNum == 0) return false;
+// Nastavení sériového portu
+void RFIDReader::setupSerialPort(QSerialPort *serialPort, const QString &portName) {
+    serialPort->setPortName(portName);
+    serialPort->setBaudRate(QSerialPort::Baud115200);
+    serialPort->setDataBits(QSerialPort::Data8);
+    serialPort->setParity(QSerialPort::NoParity);
+    serialPort->setStopBits(QSerialPort::OneStop);
+    serialPort->setFlowControl(QSerialPort::NoFlowControl);
 
-    for(iIndex = 0; iIndex < iTagNum; iIndex++)
-    {
-        bPackLength = pBuffer[iLength];
-        pID = (unsigned char *)&pBuffer[1 + iLength];
-        iLength = iLength + bPackLength + 1;
-        if(iLength > 1400) break;
-        parseTagId(pID, bPackLength);
+    if (serialPort->open(QIODevice::ReadWrite)) {
+        qDebug() << "Successfully opened" << portName;
+
+        // Připojení signálů pro čtení dat
+        if (serialPort == serialPort1) {
+            connect(serialPort, &QSerialPort::readyRead, this, &RFIDReader::handleReadyRead1);
+        } else if (serialPort == serialPort2) {
+            connect(serialPort, &QSerialPort::readyRead, this, &RFIDReader::handleReadyRead2);
+        }
+    } else {
+        qWarning() << "Failed to open" << portName << serialPort->errorString();
     }
-    return false;
 }
 
-void RFIDReader::CallBackFunc(int msg, int param1, unsigned char *param2, int param3,unsigned char *param4)
-{
-    Q_UNUSED(param4);
+// Zpracování dat z prvního zařízení
+void RFIDReader::handleReadyRead1() {
+    QByteArray data = serialPort1->readAll();
+    emitTag(data, "Device 1");
+}
 
-    if (msg == 2)  //Data
-    {
-        g_pReader->addTagBuffer((unsigned char *)param2, param3, param1);
-    }
-    else if(msg == 1) //Device Out
-    {
-    }
-    else if(msg == 0) //Device Insert
-    {
+// Zpracování dat z druhého zařízení
+void RFIDReader::handleReadyRead2() {
+    QByteArray data = serialPort2->readAll();
+    emitTag(data, "Device 2");
+}
+
+// Výpis dat v hexadecimálním formátu
+void RFIDReader::emitTag(const QByteArray &data, const QString &deviceName) {
+    qDebug() << "Data from" << deviceName << "in hexadecimal format:";
+    qDebug() << data.toHex();
+
+    if (data.size() > 14) {
+        emit tagRead(data.right(14).left(12).toHex().toUpper());
     }
 }

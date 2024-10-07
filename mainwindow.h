@@ -66,7 +66,7 @@ private:
     QSortFilterProxyModel *m_exportResultList;
     ResultsDialog *m_resultsDialog;
     Reader *m_readerDialog;
-    RFIDReader m_rfidReader;
+    RFIDReader *m_rfidReader;
 
     QMap<QString, QTime> m_winnersTime;
     QMap<QString, short> m_lastTrackRank;

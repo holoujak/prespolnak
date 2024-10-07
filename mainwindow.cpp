@@ -88,13 +88,14 @@ MainWindow::MainWindow(QWidget *parent) :
         m_filterResultList->sort(logicalIndex, order);
     });
 
+    m_rfidReader = new RFIDReader("/dev/ttyUSB0", "/dev/ttyUSB1");
     m_resultsDialog = new ResultsDialog(m_filterResultList, this);
     m_resultsDialog->show();
 
     m_readerDialog = new Reader(m_rfidReader, this);
     m_readerDialog->show();
 
-    connect(&m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 MainWindow::~MainWindow()
@@ -158,7 +159,7 @@ void MainWindow::printModel(QAbstractProxyModel *pModel, QList<int> excludedColu
 void MainWindow::on_pb_start_clicked()
 {
     ui->te_startTime->setTime(QTime().currentTime());
-    connect(&m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 void MainWindow::onNewTagRead(QString tagId)
@@ -344,13 +345,13 @@ void MainWindow::on_pb_printResults_clicked()
 void MainWindow::on_pb_start4_clicked()
 {
     ui->te_startTime4->setTime(QTime().currentTime());
-    connect(&m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 void MainWindow::on_pb_startChildren_clicked()
 {
     ui->te_startTimeChildren->setTime(QTime().currentTime());
-    connect(&m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
+    connect(m_rfidReader, &RFIDReader::tagRead, this, &MainWindow::onNewTagRead,  Qt::UniqueConnection);
 }
 
 void MainWindow::on_category_export_triggered(const QString category)
