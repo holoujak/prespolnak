@@ -54,6 +54,7 @@ QVariant RacerModel::data(const QModelIndex &index, int role) const
             case 6: return m_racers[index.row()].timeByWiner().toString("HH:mm:ss");
             case 7: return m_racers[index.row()].categoryRank();
             case 8: return m_racers[index.row()].trackRank();
+            case 9: return m_racers[index.row()].track();
         }
     }
     return QVariant();
@@ -108,6 +109,7 @@ bool RacerModel::setData(const QModelIndex &index, const QVariant &value, int ro
             case 6: racer.setTimeByWinner(QTime::fromString(value.toString(), "HH:mm:ss")); break;
             case 7: racer.setCategoryRank(value.toInt()); break;
             case 8: racer.setTrackRank(value.toInt()); break;
+            case 9: racer.setTrack(value.toString()); break;
         }
     }
     return true;
