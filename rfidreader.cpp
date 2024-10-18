@@ -24,7 +24,7 @@ void RFIDReader::setupSerialPort(QSerialPort *serialPort, const QString &portNam
     serialPort->setDataBits(QSerialPort::Data8);
     serialPort->setParity(QSerialPort::NoParity);
     serialPort->setStopBits(QSerialPort::OneStop);
-    serialPort->setFlowControl(QSerialPort::NoFlowControl);
+    serialPort->setFlowControl(QSerialPort::HardwareControl);
 
     if (serialPort->open(QIODevice::ReadWrite)) {
         qDebug() << "Successfully opened" << portName;
@@ -56,8 +56,10 @@ void RFIDReader::handleReadyRead2() {
 void RFIDReader::emitTag(const QByteArray &data, const QString &deviceName) {
     qDebug() << "Data from" << deviceName << "in hexadecimal format:";
     qDebug() << data.toHex();
+    int size = data.size();
 
-    if (data.size() > 14) {
+
+    if (size == 25 || size == 32) {
         emit tagRead(data.right(14).left(12).toHex().toUpper());
     }
 }

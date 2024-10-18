@@ -26,7 +26,7 @@ public:
     ~MainWindow();
 
 private:
-    void printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns = QList<int>());
+    void printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns = QList<int>(), QString title = QString(""));
     void on_category_export_triggered(const QString category);
     void on_track_export_triggered(const QString track);
     void resultImport(Racer &racer);

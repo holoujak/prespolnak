@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     resultColums.insert("Ztrata na viteze", 6);
     resultColums.insert("Poradi v kategorii", 7);
     resultColums.insert("Celkove poradi", 8);
+    resultColums.insert("Trat", 9);
     m_resultList = new RacerModel(resultColums, this);
 
     m_filterStartList = new QSortFilterProxyModel(this);
@@ -129,16 +130,28 @@ MainWindow::~MainWindow()
     }
 }
 
-void MainWindow::printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns)
+void MainWindow::printModel(QAbstractProxyModel *pModel, QList<int> excludedColumns, QString title)
 {
     QPrinter printer;
     // printer setup
+    if (!title.isEmpty()) {
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setOutputFileName(QDir::homePath().append(QDir::separator()) + title + QString(".pdf"));
+    }
 
     QPrintDialog dialog(&printer, this);
     dialog.setWindowTitle(tr("Print Document"));
+
     if (dialog.exec() == QDialog::Accepted) {
         QPainter painter;
         painter.begin(&printer);
+        painter.setFont(QFont("Arial", 30));
+        painter.drawText(rect(), Qt::AlignTop, title);
+
+        painter.setFont(QFont("Arial", 12));
+
+        painter.translate(0.0, 40.0);
+
         TablePrinter tablePrinter(&painter, &printer);
         QVector<int> stretch;
         QVector<QString> headers;
@@ -360,12 +373,14 @@ void MainWindow::on_category_export_triggered(const QString category)
     QList<int> excludedColumns;
     //excludedColumns.append(columns["Ztrata na viteze"]);
     excludedColumns.append(columns["Celkove poradi"]);
+    excludedColumns.append(columns["RFIDTag"]);
+    excludedColumns.append(columns["Trat"]);
     m_exportResultList->setFilterKeyColumn(columns["Kategorie"]);
     m_exportResultList->setFilterFixedString(category);
     m_exportResultList->sort(columns["Poradi v kategorii"],
                              Qt::SortOrder::AscendingOrder);
 
-    printModel(m_exportResultList, excludedColumns);
+    printModel(m_exportResultList, excludedColumns, category);
 }
 
 void MainWindow::on_track_export_triggered(const QString track)
@@ -374,12 +389,14 @@ void MainWindow::on_track_export_triggered(const QString track)
     QList<int> excludedColumns;
     excludedColumns.append(columns["Ztrata na viteze"]);
     excludedColumns.append(columns["Poradi v kategorii"]);
+    excludedColumns.append(columns["RFIDTag"]);
+    excludedColumns.append(columns["Trat"]);
     m_exportResultList->setFilterKeyColumn(columns["Trat"]);
     m_exportResultList->setFilterFixedString(track);
     m_exportResultList->sort(columns["Celkove poradi"],
                              Qt::SortOrder::AscendingOrder);
 
-    printModel(m_exportResultList, excludedColumns);
+    printModel(m_exportResultList, excludedColumns, track);
 }
 
 void MainWindow::on_pushButton_clicked()
